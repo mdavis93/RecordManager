@@ -86,8 +86,8 @@
        SQL
      end
      ```
-   >**Assuming you have an `AddressBook`, it might get called like this:**
-   ```ruby
-   myAddressBook = AddressBook.find_by("name", "My Address Book")
-   ```
-   **Your code should use a `SELECT…WHERE` SQL query and return an array of objects to the caller. Send your code in the submission tab.**
+   > **Assuming you have an `AddressBook`, it might get called like this:**
+   > ```ruby
+   > myAddressBook = AddressBook.find_by("name", "My Address Book")
+   > ```
+   > **Your code should use a `SELECT…WHERE` SQL query and return an array of objects to the caller. Send your code in the submission tab.**
