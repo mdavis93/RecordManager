@@ -158,7 +158,7 @@ module Selection
       case args.first
       when String
         rows = connection.execute <<-SQL
-	            SELECT * FROM #{table} #{BlocRecord::Utility.sql_strings(args.first)};
+	            SELECT * FROM #{table} #{RecordManager::Utility.sql_strings(args.first)};
         SQL
       when Symbol
         rows = connection.execute <<-SQL

@@ -12,13 +12,13 @@ module Persistence
 
   def save!
     unless self.id
-      self.id = self.class.create(BlocRecord::Utility.instance_variables_to_hash(self)).id
-      BlocRecord::Utility.reload_obj(self)
+      self.id = self.class.create(RecordManager::Utility.instance_variables_to_hash(self)).id
+      RecordManager::Utility.reload_obj(self)
       return true
     end
 
     fields = self.class.attributes.map { |col|
-      "#{col}=#{BlocRecord::Utility.sql_strings(
+      "#{col}=#{RecordManager::Utility.sql_strings(
         self.instance_variable_get("@#{col}"))}"
     }.join(',')
 
@@ -37,6 +37,21 @@ module Persistence
 
   def update_attributes(updates)
     self.class.update(self.id, updates)
+  end
+
+
+  def method_missing(m, *args)
+    if m.to_s.start_with?('update_')
+      column_that_might_exist = m.to_s.split('update')[1]
+      if self.class.columns.include?(column_that_might_exist)
+        column_that_does_exist = column_that_might_exist
+        self.class.update(self.id, { column_that_does_exist => args.first } )
+      else
+        raise "Invalid method, #{m}. Try again."
+      end
+    else
+      super
+    end
   end
 
   module ClassMethods
@@ -62,20 +77,31 @@ module Persistence
     end
 
     def update(ids, updates)
-      updates = RecordManager::Utility.convert_keys(updates)
-      updates.delete "id"
-      updates_array = updates.map{|key, value| "#{key}=#{RecordManager::Utility.sql_strings(value)}"}
-      where_clause = if ids.class == Fixnum
-                       "WHERE id = #{ids};"
-                     elsif ids.class == Array
-                       ids.empty? ? ';' : "WHERE id IN (#{ids.join(',')});"
-                     else
-                       ';'
-                     end
+      if ids.class == Array
+        updates_collection = []
+        ids.each_with_index do |id, index|
+          update(id.to_i, updates[index])
+        end
+      else
+        updates = RecordManager::Utility.convert_keys(updates)
+        updates_collection = updates.map{ |key, value| "#{key}=#{RecordManager::Utility.sql_strings(value)}" }
+      end
+
+      puts ids.class
+
+      expression = if ids.class == Integer
+                     "WHERE id = #{ids};"
+                   elsif ids.class == Array
+                     ids.empty? ? ';' : "WHERE id IN #{ids.join(',')};"
+                   else
+                     ';'
+                   end
+
       connection.execute <<-SQL
-        UPDATE #{table}
-           SET #{updates_array * ','} #{where_clause}
+          UPDATE #{table}
+          SET #{updates_collection * ","} #{expression}
       SQL
+
       true
     end
   end
