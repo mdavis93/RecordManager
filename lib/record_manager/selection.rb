@@ -35,7 +35,7 @@ module Selection
     rows_to_array(rows)
   end
 
-  def take(num=1)
+  def take(num = 1)
     if num > 1
       rows = connection.execute <<-SQL
         SELECT #{columns.join ','} FROM #{table}
@@ -101,7 +101,7 @@ module Selection
         expression = args.first
       when Hash
         expression_hash = RecordManager::Utility.convert_keys(args.first)
-        expression = expression_hash.map{ |key, value| "#{key}=#{RecordManager::Utility.sql_strings(value)}" }.join(' and ')
+        expression = expression_hash.map { |key, value| "#{key}=#{RecordManager::Utility.sql_strings(value)}" }.join(' and ')
       end
     end
 
@@ -122,7 +122,7 @@ module Selection
       args.each do |arg|
         arg.is_a?(String) ? order_array << arg : nil
         arg.is_a?(Symbol) ? order_array << arg.to_s : nil
-        arg.is_a?(Hash) ? order_array << arg.map{ |k,v| k.to_s } : nil
+        arg.is_a?(Hash) ? order_array << arg.map { |k, _v| k.to_s } : nil
       end
 
       if order_array.flatten.join(',').include?('desc')
@@ -150,7 +150,7 @@ module Selection
   def join(*args)
     if args.count > 1
 
-      joins = args.map { |arg| "INNER JOIN #{arg} ON #{arg}.#{table}_id = #{table}.id"}.join(" ")
+      joins = args.map { |arg| "INNER JOIN #{arg} ON #{arg}.#{table}_id = #{table}.id" }.join(' ')
       rows = connection.execute <<-SQL
 	          SELECT * FROM #{table} #{joins}
       SQL
@@ -190,6 +190,8 @@ module Selection
   end
 
   def rows_to_array(rows)
-    rows.map { |row| new(Hash[columns.zip(row)]) }
+    collection = RecordManager::Collection.new
+    rows.each { |row| collection << new(Hash[columns.zip(row)]) }
+    collection
   end
 end

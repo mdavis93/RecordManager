@@ -3,6 +3,7 @@ require 'record_manager/schema'
 require 'record_manager/persistence'
 require 'record_manager/selection'
 require 'record_manager/connection'
+require 'record_manager/collection'
 
 module RecordManager
   class Base
