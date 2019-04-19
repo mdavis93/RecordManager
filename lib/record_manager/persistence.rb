@@ -39,9 +39,26 @@ module Persistence
     self.class.update(self.id, updates)
   end
 
+  def destroy
+    self.class.destroy(self.id)
+  end
+
   module ClassMethods
     def update_all(updates)
       update(nil, updates)
+    end
+
+    def destroy(*id)
+      where_clause = if id.length > 1
+                       "WHERE id IN (#{id.join(',')});"
+                     else
+                       "WHERE id = #{id.first};"
+                     end
+
+      connection.execute <<-SQL
+        DELETE FROM #{table} #{where_clause}
+      SQL
+      true
     end
 
     def create(attrs)
@@ -76,6 +93,38 @@ module Persistence
         UPDATE #{table}
            SET #{updates_array * ','} #{where_clause}
       SQL
+      true
+    end
+
+    def destroy_all(*args)
+      if args.empty?
+        connection.execute <<-SQL
+        DELETE FROM #{table};
+        SQL
+      elsif args.count > 1
+        conditions = args.shift
+        params = args
+        sql = <<-SQL
+          DELETE FROM #{table}
+          WHERE #{conditions};
+        SQL
+
+        connection.execute(sql, params)
+      else
+        case args.first
+        when Hash
+          conditions_hash = RecordManager::Utility.convert_keys(args.first)
+          conditions = conditions_hash.map {|key, value| "#{key}=#{RecordManager::Utility.sql_strings(value)}"}.join(" and ")
+        when String
+          conditions = args.first
+        end
+
+        connection.execute <<-SQL
+          DELETE FROM #{table}
+          WHERE #{conditions};
+        SQL
+      end
+
       true
     end
   end
