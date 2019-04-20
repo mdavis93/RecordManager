@@ -4,6 +4,7 @@ require 'record_manager/persistence'
 require 'record_manager/selection'
 require 'record_manager/connection'
 require 'record_manager/collection'
+require 'record_manager/associations'
 
 module RecordManager
   class Base
@@ -11,6 +12,7 @@ module RecordManager
     extend Selection
     extend Schema
     extend Connection
+    extend Associations
 
     def initialize(options = {})
       options = RecordManager::Utility.convert_keys(options)

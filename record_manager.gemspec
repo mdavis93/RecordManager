@@ -11,5 +11,6 @@ Gem::Specification.new do |s|
   s.homepage      =
       'http://rubygems.org/gems/record_manager'
   s.license       = 'MIT'
+  s.add_runtime_dependency 'activesupport'
   s.add_runtime_dependency 'sqlite3', '~> 1.3'
 end
