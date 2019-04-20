@@ -1,4 +1,5 @@
 require 'sqlite3'
+require 'pg'
 require 'record_manager/utility'
 
 module Schema
